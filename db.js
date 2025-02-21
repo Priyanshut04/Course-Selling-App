@@ -35,12 +35,12 @@ const purchaseSchema = new Schema({
 
 const userModel = mongoose.model("user", userSchema);
 const adminModel = mongoose.model("admin", adminSchema);
-const coursesModel = mongoose.model("course", courseSchema);
+const courseModel = mongoose.model("course", courseSchema);
 const purchaseModel = mongoose.model("purchase", purchaseSchema);
 
 module.exports = {
     userModel,
     adminModel,
-    coursesModel,
+    courseModel,
     purchaseModel
 }
