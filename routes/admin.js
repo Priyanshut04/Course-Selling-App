@@ -82,12 +82,17 @@ adminRouter.post('/course',adminMiddleware, async function(req,res){
     const { title, description, imgUrl, price } = req.body
 
     try{
-        await courseModel.create({
+        const course = await courseModel.create({
             title: title,
             description: description,
             price: price,
             imgUrl: imgUrl,
             creatorId: adminId
+        })
+
+        res.json({
+            message: "course created",
+            courseId: course._id
         })
     }
     catch(e){
