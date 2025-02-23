@@ -1,9 +1,11 @@
 const { Router } = require("express")
 const userRouter = Router()
-const { userModel } = require("../db")
+const { userModel, courseModel } = require("../db")
 const { z } = require("zod")
 const jwt = require("jsonwebtoken")
 const {JWT_USER_PASSWORD} = require("../config")
+const { purchaseModel } = require("../db")
+const { userMiddleware } = require("../middleware/user")
 
 
 userRouter.post('/signup', async function(req,res){
@@ -27,11 +29,14 @@ userRouter.post('/signup', async function(req,res){
     });
     
     try{
-        await userModel.create({
+        const user = await userModel.create({
             email : email,
             password : password,
             firstName : firstName, 
             lastName : lastName
+        })
+        return res.json({
+            message : "User signed up"
         })
     }
 
@@ -42,10 +47,6 @@ userRouter.post('/signup', async function(req,res){
         })
     }
 
-
-    res.json({
-        message:"signup endpoint"
-    })
 })
 
 userRouter.post('/signin',async function(req,res){
@@ -72,9 +73,24 @@ userRouter.post('/signin',async function(req,res){
     }
 })
 
-userRouter.get('/purchases',(req,res)=>{
+userRouter.get('/purchases', userMiddleware, async function(req,res){
+    const userId = req.userId;
+    const purchases = await purchaseModel.find({
+        userId,
+    })
+
+    let purchasedIds = [];
+    for(let i=0;i<purchases.length;i++){
+        purchasedIds.push(purchases[i].courseId);
+    }
+
+    const courseData = await courseModel.find({
+        _id : { $in : purchasedIds }
+    })
+
     res.json({
-        message:"purchases endpoint"
+        message:"purchases made:",
+        courseData
     })
 })
 

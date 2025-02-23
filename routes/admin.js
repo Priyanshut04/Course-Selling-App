@@ -105,46 +105,51 @@ adminRouter.post('/course',adminMiddleware, async function(req,res){
     })
 })
 
-adminRouter.put('/course', adminMiddleware, async function(req,res){
-    const adminId = req.adminId
+adminRouter.put('/course', adminMiddleware, async function(req, res) {
+    const adminId = req.adminId;
+    const { title, description, imgUrl, price, courseId } = req.body;
 
-    const { title, description, imgUrl, price, courseId } = req.body
+    try {
+        const course = await courseModel.updateOne(
+            { _id: courseId, creatorId: adminId }, // Ensure admin owns the course
+            { title, description, price, imgUrl }
+        );
 
-    try{
-        const course = await courseModel.updateOne({
-            _id : courseId,
-            creatorId : adminId
-        },{
-            title: title,
-            description: description,
-            price: price,
-            imgUrl: imgUrl
-        })
+        if (course.modifiedCount === 0) {
+            return res.status(403).json({
+                message: "Course not updated. Either course does not exist or you are not authorized."
+            });
+        }
 
         res.json({
-            message: "course updated"
-        })
+            message: "Course updated successfully"
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({
+            message: "Internal server error"
+        });
     }
-    catch(e){
-        console.log(e)
-    }
+});
 
-
-    res.json({
-        message:"purchases endpoint"
-    })
-})
 
 adminRouter.get('/course/bulk', adminMiddleware, async function(req,res){
     const adminId  = req.adminId
 
-    const courses = await courseModel.find({
-        creatorId : adminId
-    })
-    res.json({
-        message:"All the courses:",
-        courses
-    })
+    try {
+        const courses = await courseModel.find({
+            creatorId : adminId
+        })
+        res.json({
+            message:"List of all the courses.",
+            courses
+        })
+    } catch (error) {
+        console.log(e)
+        res.json({
+            message:"Issue in fetching courses."
+        })
+    }
 })
 
 
